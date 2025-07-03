@@ -1,0 +1,18 @@
+today <- Sys.Date()
+
+# Calcular el primer día del mes actual
+first_day_of_current_month <- floor_date(today, "week")
+
+# Calcular el último día del mes anterior
+last_day_of_previous_month <- first_day_of_current_month - days
+
+
+
+today = as.Date("2025-07-10")
+names(datos)
+
+head(datos)
+
+str_replace(datos$Inciso, "^\\d+\\s+-\\s+(UNC\\s*)?", "")
+
+table(datos$anio)

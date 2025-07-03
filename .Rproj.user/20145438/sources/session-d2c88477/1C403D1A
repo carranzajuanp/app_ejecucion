@@ -1,0 +1,27 @@
+{
+    "id": "1C403D1A",
+    "path": "~/app.R",
+    "project_path": null,
+    "type": "r_source",
+    "hash": "1828775250",
+    "contents": "",
+    "dirty": false,
+    "created": 1751413722765.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "186,0",
+        "scrollLine": "163",
+        "disableDependencyDiscovery": "1"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1751555600,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1751555600136,
+    "read_only": false,
+    "read_only_alternatives": []
+}

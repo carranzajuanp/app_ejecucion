@@ -6,53 +6,57 @@ library(plotly)
 library(scales)  
 library(lubridate)
 library(stringr)
+library(shinythemes) 
 
 # --- UI ---
 ui <- fluidPage(
-  titlePanel("Ejecución Presupuestaria UNC"),
-  textOutput("update_date_text"),
+  theme = shinytheme("flatly"), 
   
-  sidebarLayout(
-    sidebarPanel(
-      h4("Filtros de Datos"),
-      selectInput(
-        inputId = "unidad_presupuestaria_select",
-        label = "Seleccionar Unidad Presupuestaria:",
-        choices = NULL, 
-        multiple = TRUE,
-        selected = NULL
-      ),
-     
-      selectInput(
-        inputId = "inciso_select",
-        label = "Seleccionar Inciso:",
-        choices = NULL, 
-        multiple = TRUE,
-        selected = NULL
-      ),
-      hr(),
-      
-      h4("Opciones de Visualización Gráfica"),
-      radioButtons(
-        inputId = "plot_group_by",
-        label = "¿Agrupar gráfico por?",
-        choices = c("Unidad Presupuestaria" = "Unidad_Presupuestaria",
-                    "Inciso" = "Inciso"),
-        selected = "Inciso"
+  navbarPage(
+    title = "Ejecución Presupuestaria UNC", # Encabezado restaurado sin la imagen
+    
+    tabPanel(
+      "Tabla de Datos", 
+      sidebarLayout(
+        sidebarPanel(
+          h4("Filtros de Datos"),
+          selectInput(
+            inputId = "unidad_presupuestaria_select",
+            label = "Seleccionar Unidad Presupuestaria:",
+            choices = NULL, 
+            multiple = TRUE,
+            selected = NULL
+          ),
+          
+          selectInput(
+            inputId = "inciso_select",
+            label = "Seleccionar Inciso:",
+            choices = NULL, 
+            multiple = TRUE,
+            selected = NULL
+          ),
+          hr(),
+          
+          h4("Opciones de Visualización Gráfica"),
+          radioButtons(
+            inputId = "plot_group_by",
+            label = "¿Agrupar gráfico por?",
+            choices = c("Unidad Presupuestaria" = "Unidad_Presupuestaria",
+                        "Inciso" = "Inciso"),
+            selected = "Inciso"
+          )
+        ),
+        
+        mainPanel(
+          textOutput("update_date_text"), 
+          h3("Tabla de Ejecución"), 
+          DT::dataTableOutput("ejecucion_table") 
+        )
       )
     ),
     
-    mainPanel(
-      tabsetPanel(
-        id = "mainTabset",
-        selected = "Gráfico de Ejecución",
-        tabPanel("Tabla de Datos",
-                 DT::dataTableOutput("ejecucion_table")
-        ),
-        tabPanel("Gráfico de Ejecución",
-                 plotlyOutput("ejecucion_plot", height = "80%")
-        )
-      )
+    tabPanel("Gráfico", 
+             plotlyOutput("ejecucion_plot", height = "90vh")
     )
   )
 )
@@ -65,11 +69,8 @@ server <- function(input, output, session) {
     paste("Información actualizada al:", formatted_date)
   })
   
-  # --- CARGA DE DATOS ---
   datos <- read.csv("C:/Users/Usuario/Downloads/shiny_presupuesto.csv")
-  # --- FIN CARGA DE DATOS ---
   
-  # --- MANIPULACION DE DATOS ---
   datos <- rename(datos, Unidad_Presupuestaria = unidad_presupuestaria_desc,
                   Ejecutado = ejecutado,
                   Inciso = inciso)
@@ -77,8 +78,6 @@ server <- function(input, output, session) {
   datos$Inciso <- str_replace(datos$Inciso, "^\\d+\\s+-\\s+(UNC\\s*)?", "")
   datos$Ejecutado <- as.numeric(datos$Ejecutado)
   datos = subset(datos, anio == year(Sys.Date()))
-  # --- FIN MANIPULACION DE DATOS ---
-
   
   observe({
     updateSelectInput(session, "unidad_presupuestaria_select",
@@ -145,7 +144,7 @@ server <- function(input, output, session) {
         )
       )
   })
-
+  
   output$ejecucion_table <- DT::renderDataTable({
     table_data <- filtered_data_table()
     colnames(table_data)[colnames(table_data) == "Ejecutado_Millones_Display"] <- "Ejecutado (Millones de $)"
@@ -160,7 +159,7 @@ server <- function(input, output, session) {
       )
     ), extensions = 'Buttons')
   })
-
+  
   output$ejecucion_plot <- renderPlotly({
     plot_data <- plot_data_aggregated()
     
@@ -183,6 +182,5 @@ server <- function(input, output, session) {
     ggplotly(p, tooltip = "tooltip_text") %>% config(displayModeBar = FALSE)
   })
 }
-
 
 shinyApp(ui = ui, server = server)

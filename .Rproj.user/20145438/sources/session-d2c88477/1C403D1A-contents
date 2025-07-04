@@ -13,10 +13,10 @@ ui <- fluidPage(
   theme = shinytheme("flatly"), 
   
   navbarPage(
-    title = "Ejecución Presupuestaria UNC", # Encabezado restaurado sin la imagen
+    title = "Ejecución Presupuestaria UNC", 
     
     tabPanel(
-      "Tabla de Datos", 
+      "Datos y Tabla de Ejecución", 
       sidebarLayout(
         sidebarPanel(
           h4("Filtros de Datos"),
@@ -55,7 +55,7 @@ ui <- fluidPage(
       )
     ),
     
-    tabPanel("Gráfico", 
+    tabPanel("Gráfico de Ejecución", 
              plotlyOutput("ejecucion_plot", height = "90vh")
     )
   )
@@ -153,7 +153,12 @@ server <- function(input, output, session) {
       pageLength = 15,
       lengthMenu = c(5, 10, 25, 50),
       dom = 'Bfrtip',
-      buttons = c('copy', 'csv', 'excel', 'pdf'),
+      buttons = list( # Definición explícita de los botones en español
+        list(extend = 'copy', text = 'Copiar'),
+        list(extend = 'csv', text = 'CSV'),
+        list(extend = 'excel', text = 'Excel'),
+        list(extend = 'pdf', text = 'PDF')
+      ),
       language = list(
         url = '//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json'
       )

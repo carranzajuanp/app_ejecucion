@@ -1,62 +1,68 @@
+# app.R
+
 library(shiny)
 library(dplyr)
 library(DT)
 library(ggplot2)
 library(plotly)
-library(scales)  
+library(scales)
 library(lubridate)
 library(stringr)
-library(shinythemes) 
+library(shinythemes)
 
 # --- UI ---
 ui <- fluidPage(
-  theme = shinytheme("flatly"), 
+  theme = shinytheme("flatly"),
   
   navbarPage(
-    title = "Ejecución Presupuestaria UNC", 
-    
-    tabPanel(
-      "Tabla de datos", 
-      sidebarLayout(
-        sidebarPanel(
-          h4("Filtros de Datos"),
-          selectInput(
-            inputId = "unidad_presupuestaria_select",
-            label = "Seleccionar Unidad Presupuestaria:",
-            choices = NULL, 
-            multiple = TRUE,
-            selected = NULL
-          ),
-          
-          selectInput(
-            inputId = "inciso_select",
-            label = "Seleccionar Inciso:",
-            choices = NULL, 
-            multiple = TRUE,
-            selected = NULL
-          ),
-          hr(),
-          
-          h4("Opciones de Visualización Gráfica"),
-          radioButtons(
-            inputId = "plot_group_by",
-            label = "¿Agrupar gráfico por?",
-            choices = c("Unidad Presupuestaria" = "Unidad_Presupuestaria",
-                        "Inciso" = "Inciso"),
-            selected = "Inciso"
-          )
+    title = "Ejecución Presupuestaria UNC",
+    sidebarLayout(
+      sidebarPanel(
+        h4("Filtros de Datos"),
+        selectInput(
+          inputId = "unidad_presupuestaria_select",
+          label = "Seleccionar Unidad Presupuestaria:",
+          choices = NULL,
+          multiple = TRUE,
+          selected = NULL 
         ),
         
-        mainPanel(
-          textOutput("update_date_text"), 
-          h3("Tabla de Ejecución"), 
-          DT::dataTableOutput("ejecucion_table") 
+        selectInput(
+          inputId = "inciso_select",
+          label = "Seleccionar Inciso:",
+          choices = NULL,
+          multiple = TRUE,
+          selected = unique(datos$Inciso) 
+        ),
+        hr(),
+        
+        h4("Opciones de Visualización Gráfica"),
+        radioButtons(
+          inputId = "plot_group_by",
+          label = "¿Agrupar gráfico por?",
+          choices = c("Unidad Presupuestaria" = "Unidad_Presupuestaria",
+                      "Inciso" = "Inciso"),
+          selected = "Inciso"
+        )
+      ),
+      
+      mainPanel(
+        textOutput("update_date_text"),
+        tabsetPanel(
+          id = "mainTabset",
+          selected = "Gráfico de Ejecución",
+          
+          tabPanel("Datos y Tabla de Ejecución",
+                   h3("Tabla de Ejecución"),
+                   DT::dataTableOutput("ejecucion_table")
+          ),
+          
+          tabPanel("Gráfico de Ejecución",
+                   h3("Gráfico de Ejecución Total"),
+                   plotlyOutput("ejecucion_plot", height = "90vh")
+          )
         )
       )
-    ),
-    
-    tabPanel("Gráfico", 
-             plotlyOutput("ejecucion_plot", height = "90vh")
     )
   )
 )
@@ -65,7 +71,12 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   
   output$update_date_text <- renderText({
-    formatted_date <- format(floor_date(Sys.Date(), "week"), "%d/%m/%Y")
+    today <- Sys.Date()
+    first_day_of_current_month <- floor_date(today, "month")
+    last_day_of_previous_month <- first_day_of_current_month - days(1)
+    day_28_previous_month <- update(last_day_of_previous_month, mday = 28)
+    
+    formatted_date <- format(day_28_previous_month, "%d/%m/%Y")
     paste("Información actualizada al:", formatted_date)
   })
   
@@ -102,7 +113,7 @@ server <- function(input, output, session) {
       mutate(
         Ejecutado_Millones_Display = paste0(
           "$",
-          format(round(Ejecutado_Total / 1e6, 2), 
+          format(round(Ejecutado_Total / 1e6, 2),
                  big.mark = ".",
                  decimal.mark = ","),
           " M"
@@ -153,7 +164,7 @@ server <- function(input, output, session) {
       pageLength = 15,
       lengthMenu = c(5, 10, 25, 50),
       dom = 'Bfrtip',
-      buttons = list( # Definición explícita de los botones en español
+      buttons = list(
         list(extend = 'copy', text = 'Copiar'),
         list(extend = 'csv', text = 'CSV'),
         list(extend = 'excel', text = 'Excel'),

@@ -82,7 +82,7 @@ server <- function(input, output, session) {
   observe({
     updateSelectInput(session, "unidad_presupuestaria_select",
                       choices = sort(unique(datos$Unidad_Presupuestaria)),
-                      selected = unique(datos$Unidad_Presupuestaria))
+                      selected = NULL)
     updateSelectInput(session, "inciso_select",
                       choices = sort(unique(datos$Inciso)),
                       selected = unique(datos$Inciso))
